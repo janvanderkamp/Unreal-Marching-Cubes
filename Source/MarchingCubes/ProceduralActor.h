@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "ProceduralMeshBuilder.h"
+
 #include "ProceduralActor.generated.h"
 
 UCLASS()
@@ -18,10 +20,10 @@ public:
 	AProceduralActor();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	float width;
+	float height;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	float height;
+	float depth;
 
 protected:
 
@@ -48,11 +50,19 @@ private:
 
 	void CreateTriangle();
 
-	TArray<FVector> vertices;
-	TArray<int32> triangles;
-	TArray<FVector> normals;
-	TArray<FVector2D> UV0;
-	TArray<FProcMeshTangent> tangents;
-	TArray<FLinearColor> vertexColors;
+	void LogTest(const TArray<FVector>& vertices, 
+		const TArray<int32>& triangles, const TArray<FVector>& normals, const TArray<FVector2D>& uvs, 
+		const TArray<FProcMeshTangent>& tangents, const TArray<FLinearColor>& vertexColors);
 
+	TArray<FVector> _vertices;
+	TArray<int32> _triangles;
+	TArray<FVector> _normals;
+	TArray<FVector2D> _uvs;
+	TArray<FProcMeshTangent> _tangents;
+	TArray<FLinearColor> _vertexColors;
+
+	ProceduralMeshBuilder _procMeshHandler;
+
+	bool _triggered;
+	float _playTime;
 };
