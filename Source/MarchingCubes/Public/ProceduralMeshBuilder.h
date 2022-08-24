@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "ProceduralMeshComponent.h"
 
-/**
- * 
- */
+// ProceduralMeshBuilder provides utility methods for taking a list of 3 vertices
+// and appending values to the lists of vertices, indices, normals etc.
+// that can then be used for generating a mesh using ProceduralMeshComponent
 class MARCHINGCUBES_API ProceduralMeshBuilder
 {
 public:
@@ -19,8 +19,11 @@ public:
 
 	void ResetBuffers(int numVerts);
 
+	void LogTriangles();
+
 public:
 
+	// TODO: accessors
 	TArray<FVector> _vertices;
 	TArray<int32> _triangles;
 	TArray<FVector> _normals;
