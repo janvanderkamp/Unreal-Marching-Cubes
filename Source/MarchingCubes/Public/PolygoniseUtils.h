@@ -24,6 +24,9 @@ namespace PolygoniseUtils
     // - Right Up Forward
     // - Left Up Backward
     // - Right Up Backward
+    // TODO: since each GridCell stores the positions and values for each corner,
+    // there are a lot of duplicated values. This should be optimised by looking up 
+    // a 3D grid of positions and values
     struct GridCell
     {
         FVector points[8];
