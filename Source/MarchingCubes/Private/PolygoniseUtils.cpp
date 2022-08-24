@@ -2,11 +2,13 @@
 
 
 #include "PolygoniseUtils.h"
-#include "MarchingCubesUtils.h"
+#include "MarchingCubeUtils.h"
 
 using namespace PolygoniseUtils;
+using namespace std;
 
-// TODO: add comments to explain usage 
+// EdgeTable: a look-up table where the index into the array is an int representing 
+// the combination 
 int* PolygoniseUtils::EdgeTable() 
 {
     static int edgeTable[256] = {
@@ -312,18 +314,15 @@ TriLookupTable PolygoniseUtils::TriTable()
     return triTable;
 }
 
-
 // Code adapted from: http://paulbourke.net/geometry/polygonise/
-int PolygoniseUtils::Polygonise(const GridCell& grid, float isolevel, std::vector<Triangle>& trianglesOut)
+int PolygoniseUtils::Polygonise(const GridCell& grid, float isolevel, TArray<Triangle>& trianglesOut)
 {
     int i, ntriang;
     int cubeindex;
     FVector vertlist[12];
 
-    /*
-       Determine the index into the edge table which
-       tells us which vertices are inside of the surface
-    */
+    // The first step is to check the 'value' at each corner to determine which ones are inside the iso-surface,
+    // and mark this by setting the corresponding bit on cubeindex 
     cubeindex = 0;
     if (grid.values[0] < isolevel) cubeindex |= 1;
     if (grid.values[1] < isolevel) cubeindex |= 2;
@@ -337,11 +336,18 @@ int PolygoniseUtils::Polygonise(const GridCell& grid, float isolevel, std::vecto
     int* edgeTable = EdgeTable();
     TriLookupTable triTable = TriTable();
 
-    /* Cube is entirely in/out of the surface */
+    // Next we look-up the edge table with cubeindex, and if no bits were set, 
+    // then we know the whole cube is outside or inside the surface and no triangles will need to be generated
     if (EdgeTable()[cubeindex] == 0)
         return(0);
 
-    /* Find the vertices where the surface intersects the cube */
+    // This block looks-up edgetable with cubeindex to determine how many triangles are required,
+    // along with the positions of the ordered-vertices of these triangles.
+    // 
+    // It does this by checking if an edge contains the vertex of a required triangle
+    // (i.e. is the correspnding bit set on this ordered edge)
+    // 
+    // For each edge that contains a vertex, the final vertex position is determined with linear interpolation
     if (edgeTable[cubeindex] & 1)
         vertlist[0] =
         VertexInterp(isolevel, grid.points[0], grid.points[1], grid.values[0], grid.values[1]);
@@ -379,14 +385,19 @@ int PolygoniseUtils::Polygonise(const GridCell& grid, float isolevel, std::vecto
         vertlist[11] =
         VertexInterp(isolevel, grid.points[3], grid.points[7], grid.values[3], grid.values[7]);
 
-    /* Create the triangle */
+    // At this point, any required vertices have been set in vertlist,
+    // but they still need to be ordered so they render correctly.
+    // This is handled by checking the look-up table 'triTable',
+    // looping through valid (i.e. > -1) indices, and storing the
+    // corresponding vertices in a Triangle struct for rendering later
     ntriang = 0;
     for (i = 0; triTable[cubeindex][i] != -1; i += 3) {
         Triangle t;
+
         t.points[0] = vertlist[triTable[cubeindex][i]];
         t.points[1] = vertlist[triTable[cubeindex][i + 1]];
         t.points[2] = vertlist[triTable[cubeindex][i + 2]];
-        trianglesOut.push_back(t);
+        trianglesOut.Add(t);
 
         ntriang++;
     }
@@ -394,10 +405,6 @@ int PolygoniseUtils::Polygonise(const GridCell& grid, float isolevel, std::vecto
     return(ntriang);
 }
 
-/*
-   Linearly interpolate the position where an isosurface cuts
-   an edge between two vertices, each with their own scalar value
-*/
 FVector PolygoniseUtils::VertexInterp(float isolevel, const FVector& p1, const FVector& p2, float valp1, float valp2)
 {
     float mu;
