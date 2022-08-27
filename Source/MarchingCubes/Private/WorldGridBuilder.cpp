@@ -89,6 +89,23 @@ void WorldGridBuilder::Polygonise(float isolevel, TArray<Triangle>& trianglesOut
 
 double WorldGridBuilder::DensityFunction(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers, float allNoiseScale)
 {
+	return DensityFunctionTest(corner, noiseSamplers, allNoiseScale);
+}
+
+double WorldGridBuilder::DensityFunctionTest(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers, float allNoiseScale)
+{
+	double density = 0.f;
+
+	FVector sample(corner.X / _dimensions.X, corner.Y / _dimensions.Y, corner.Z / _dimensions.Z);
+	FVector toCenter = FVector(0.5f) - sample;
+
+	density += toCenter.Length() * allNoiseScale;
+
+	return density;
+}
+
+double WorldGridBuilder::DensityFunctionNoise(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers, float allNoiseScale)
+{
 	// Start by placing a 'floor' at Z == 0, which will be across the center of the grid area
 	double density = corner.Z;
 

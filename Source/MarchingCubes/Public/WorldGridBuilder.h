@@ -101,5 +101,9 @@ namespace MarchingCubeUtils
 		TArray<WorldGridCell> _gridCells;
 
 		double DensityFunction(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers, float allNoiseScale);
+
+		double DensityFunctionNoise(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers, float allNoiseScale);
+
+		double DensityFunctionTest(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers, float allNoiseScale);
 	};
 }
