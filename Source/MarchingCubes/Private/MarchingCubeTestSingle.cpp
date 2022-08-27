@@ -110,7 +110,6 @@ void AMarchingCubeTestSingle::UpdateDebugCube() const
 		DrawDebugBox(world, pos + corner, FVector(1), GetActorRotation().Quaternion(), FColor(col, col, col), true, -1.f, 0, 1.5f);
 	}
 
-#if WITH_EDITOR
 	if (ShowDebugTriangles)
 	{
 		for (int32 i = 0; i < _procMeshBuilder._vertices.Num() - 1; ++i)
@@ -120,7 +119,6 @@ void AMarchingCubeTestSingle::UpdateDebugCube() const
 			DrawDebugLine(world, pos + vertA, pos + vertB, FColor(150, 150, 0), true, -1.f, 0, 0.5f);
 		}
 	}
-#endif
 }
 
 #endif
