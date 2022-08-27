@@ -15,6 +15,8 @@ namespace PolygoniseUtils
 	struct Triangle;
 }
 
+/** This is for testing the polygonise functionality, and exposes a bitmask for toggling a combination of corners that are outside of the isosurface.
+Triangles are then generated using ProceduralMeshBuilder for easy verification in editor **/
 UCLASS()
 class MARCHINGCUBES_API AMarchingCubeTestSingle : public AActor
 {
@@ -58,6 +60,17 @@ public:
 private:
 
 	void CreateTriangles(const TArray<PolygoniseUtils::Triangle>& triangles);
+
+#if WITH_EDITOR
+
+	// For drawing a cube to help vizualising triangle and corner positioning:
+	// - draws a debug cube to show edges of the marching cube
+	// - draws a small box with a color scaled by corner value: 
+	//		- brighter than gray is outside the surface
+	//		- darker than gray is inside the surface
+	// - draws light lines showing edges of generated triangles
+	void UpdateDebugCube(const TArray<PolygoniseUtils::Triangle>& triangles) const;
+#endif
 
 	// TODO: refactor common code out of this and WorldGrid
 	UPROPERTY(VisibleAnywhere)

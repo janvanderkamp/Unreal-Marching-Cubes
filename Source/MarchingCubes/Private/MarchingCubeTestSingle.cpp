@@ -47,7 +47,7 @@ void AMarchingCubeTestSingle::PostEditChangeProperty(FPropertyChangedEvent& prop
 	// Just create a new WorldGridCell on each edit
 	// Forcing all values to be less than Isolevel to flag that they start 
 	// inside the surface by default
-	_gridCell = WorldGridCell(FVector(1, 0, 0), Size, Isolevel - 1);
+	_gridCell = WorldGridCell(FVector::ZeroVector, Size, Isolevel - 1);
 	UE_LOG(LogTemp, Warning, TEXT("PostEditChangeProperty: logging Size: %f, Isolevel: %f, InsideCorners: %d"), Size, Isolevel, InsideCorners);
 
 	for (uint8 i = 0; i < 8; ++i)
@@ -65,20 +65,47 @@ void AMarchingCubeTestSingle::PostEditChangeProperty(FPropertyChangedEvent& prop
 	TArray<Triangle> triangles;
 	Polygonise(_gridCell.GridCell, Isolevel, triangles);
 
-	UE_LOG(LogTemp, Warning, TEXT("logging triangles:"));
-	int index = 0;
-	for (auto iter = triangles.begin(); iter != triangles.end(); ++iter)
-	{
-		UE_LOG(LogTemp, Log, TEXT("vert 1 - (%f, %f, %f)"), index++, (*iter).points[0].X, (*iter).points[0].Y, (*iter).points[0].Z);
-		UE_LOG(LogTemp, Log, TEXT("vert 2 - (%f, %f, %f)"), index++, (*iter).points[1].X, (*iter).points[1].Y, (*iter).points[1].Z);
-		UE_LOG(LogTemp, Log, TEXT("vert 3 - (%f, %f, %f)"), index++, (*iter).points[2].X, (*iter).points[2].Y, (*iter).points[2].Z);
-	}
-
 	CreateTriangles(triangles);
 
+	UpdateDebugCube(triangles);
 
 	Super::PostEditChangeProperty(propertyChangedEvent);
 }
+
+void AMarchingCubeTestSingle::UpdateDebugCube(const TArray<Triangle>& triangles) const
+{
+	FRotator rot = GetActorRotation();
+
+	FlushPersistentDebugLines(GetWorld());
+
+	// Position and rotation for applying any transformations
+	const FVector& pos = GetActorLocation();
+	const FQuat& orientation = GetActorRotation().Quaternion();
+
+	// First draw a debug cube to show edges where triangle vertices might be drawn
+	UWorld * world = GetWorld();
+	DrawDebugBox(world, pos, FVector(Size / 2.f), orientation, FColor(150, 150, 150), true, -1.f, 0, 0.5f);
+
+	// Now draw a small box at each by taking corners local offset and applying Actor's rotation
+	for (size_t i = 0; i < 8; i++)
+	{
+		const FVector& corner = orientation.RotateVector(_gridCell.GridCell.points[i]);
+		double col = 255 * _gridCell.GridCell.values[i];
+		DrawDebugBox(world, pos + corner, FVector(1), GetActorRotation().Quaternion(), FColor(col, col, col), true, -1.f, 0, 1.5f);
+	}
+
+	// And last we draw lighter lines along all triangle edges
+	for (auto& tri : triangles) 
+	{
+		for (size_t i = 0; i < 2; i++)
+		{
+			const FVector& vertA = orientation.RotateVector(tri.points[i]);
+			const FVector& vertB = orientation.RotateVector(tri.points[i+1]);
+			DrawDebugLine(world, pos + vertA, pos + vertB, FColor(150, 150, 0), true, -1.f, 0, 0.5f);
+		}
+	}
+}
+
 #endif
 
 // Called every frame
