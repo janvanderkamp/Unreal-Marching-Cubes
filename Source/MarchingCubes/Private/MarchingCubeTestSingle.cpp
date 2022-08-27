@@ -13,15 +13,29 @@ AMarchingCubeTestSingle::AMarchingCubeTestSingle() :
 	InsideCorners(0),
 	Isolevel(0),
 	Size(1.f),
+	TickInEditor(false),
+	RotateSpeed(25.f),
+	ShowDebugTriangles(false),
 	_gridCell()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+#if WITH_EDITOR
+	PrimaryActorTick.bStartWithTickEnabled = true;
+#endif
+
 	_mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("CubePolys"));
 
 	RootComponent = _mesh;
 	_mesh->bUseAsyncCooking = true;
+}
+
+AMarchingCubeTestSingle::~AMarchingCubeTestSingle()
+{
+#if WITH_EDITOR
+	FlushPersistentDebugLines(GetWorld());
+#endif
 }
 
 // Called when the game starts or when spawned
@@ -44,10 +58,12 @@ void AMarchingCubeTestSingle::PostInitProperties()
 #if WITH_EDITOR
 void AMarchingCubeTestSingle::PostEditChangeProperty(FPropertyChangedEvent& propertyChangedEvent)
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Just create a new WorldGridCell on each edit
-	// Forcing all values to be less than Isolevel to flag that they start 
+	// Forcing all values to be less than 0 to flag that they start 
 	// inside the surface by default
-	_gridCell = WorldGridCell(FVector::ZeroVector, Size, Isolevel - 1);
+	_gridCell = WorldGridCell(FVector::ZeroVector, Size, -1);
 	UE_LOG(LogTemp, Warning, TEXT("PostEditChangeProperty: logging Size: %f, Isolevel: %f, InsideCorners: %d"), Size, Isolevel, InsideCorners);
 
 	for (uint8 i = 0; i < 8; ++i)
@@ -55,8 +71,8 @@ void AMarchingCubeTestSingle::PostEditChangeProperty(FPropertyChangedEvent& prop
 		uint8 compare = InsideCorners & 1 << i;
 		if (InsideCorners & compare)
 		{
-			// Set the value for this corner to less than Isolevel to flag that it's outside the surface
-			_gridCell.GridCell.values[i] = Isolevel + 1;
+			// Set the value for this corner to more than 0 to flag that it's outside the surface
+			_gridCell.GridCell.values[i] = 1;
 			UE_LOG(LogTemp, Warning, TEXT("Corner #%d is inside surface"), i+1);
 
 		}
@@ -67,12 +83,12 @@ void AMarchingCubeTestSingle::PostEditChangeProperty(FPropertyChangedEvent& prop
 
 	CreateTriangles(triangles);
 
-	UpdateDebugCube(triangles);
+	UpdateDebugCube();
 
 	Super::PostEditChangeProperty(propertyChangedEvent);
 }
 
-void AMarchingCubeTestSingle::UpdateDebugCube(const TArray<Triangle>& triangles) const
+void AMarchingCubeTestSingle::UpdateDebugCube() const
 {
 	FRotator rot = GetActorRotation();
 
@@ -94,16 +110,17 @@ void AMarchingCubeTestSingle::UpdateDebugCube(const TArray<Triangle>& triangles)
 		DrawDebugBox(world, pos + corner, FVector(1), GetActorRotation().Quaternion(), FColor(col, col, col), true, -1.f, 0, 1.5f);
 	}
 
-	// And last we draw lighter lines along all triangle edges
-	for (auto& tri : triangles) 
+#if WITH_EDITOR
+	if (ShowDebugTriangles)
 	{
-		for (size_t i = 0; i < 2; i++)
+		for (int32 i = 0; i < _procMeshBuilder._vertices.Num() - 1; ++i)
 		{
-			const FVector& vertA = orientation.RotateVector(tri.points[i]);
-			const FVector& vertB = orientation.RotateVector(tri.points[i+1]);
+			const FVector& vertA = orientation.RotateVector(_procMeshBuilder._vertices[i]);
+			const FVector& vertB = orientation.RotateVector(_procMeshBuilder._vertices[i + 1]);
 			DrawDebugLine(world, pos + vertA, pos + vertB, FColor(150, 150, 0), true, -1.f, 0, 0.5f);
 		}
 	}
+#endif
 }
 
 #endif
@@ -113,11 +130,15 @@ void AMarchingCubeTestSingle::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector newLocation = GetActorLocation();
 	FRotator newRotation = GetActorRotation();
-	float deltaRotation = DeltaTime * 10.f;
+	float deltaRotation = DeltaTime * RotateSpeed;
 	newRotation.Yaw += deltaRotation;
+
 	SetActorRotation(newRotation);
+
+#if WITH_EDITOR
+	UpdateDebugCube();
+#endif
 }
 
 void AMarchingCubeTestSingle::CreateTriangles(const TArray<Triangle>& triangles)

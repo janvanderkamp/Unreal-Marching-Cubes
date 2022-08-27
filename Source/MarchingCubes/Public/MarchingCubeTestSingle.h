@@ -15,8 +15,8 @@ namespace PolygoniseUtils
 	struct Triangle;
 }
 
-/** This is for testing the polygonise functionality, and exposes a bitmask for toggling a combination of corners that are outside of the isosurface.
-Triangles are then generated using ProceduralMeshBuilder for easy verification in editor **/
+// This is for testing the polygonise functionality, and exposes a bitmask for toggling a combination of corners that are outside of the isosurface.
+// Triangles are then generated using ProceduralMeshBuilder for easy verification in editor
 UCLASS()
 class MARCHINGCUBES_API AMarchingCubeTestSingle : public AActor
 {
@@ -39,6 +39,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "World Grid")
 	float Size;
 
+	/** Should tick run in viewport without play-in-editor enabled **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool TickInEditor;
+
+	/** How fast to rotate box for debug viewing **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	float RotateSpeed;
+
+	/** Show debug lines for generated triangles, even if back-facing **/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool ShowDebugTriangles;
+
 protected:
 
 	// Called when the game starts or when spawned
@@ -49,8 +61,14 @@ protected:
 	virtual void PostInitProperties() override;
 
 #if WITH_EDITOR
+
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& propertyChangedEvent) override;
+
+	virtual bool ShouldTickIfViewportsOnly() const override { return TickInEditor; }
+
 #endif
+
+	virtual ~AMarchingCubeTestSingle();
 
 public:	
 
@@ -69,7 +87,8 @@ private:
 	//		- brighter than gray is outside the surface
 	//		- darker than gray is inside the surface
 	// - draws light lines showing edges of generated triangles
-	void UpdateDebugCube(const TArray<PolygoniseUtils::Triangle>& triangles) const;
+	void UpdateDebugCube() const;
+
 #endif
 
 	// TODO: refactor common code out of this and WorldGrid
