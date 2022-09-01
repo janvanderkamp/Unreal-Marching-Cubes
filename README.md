@@ -53,14 +53,18 @@ double WorldGridBuilder::DensityFunctionTest(const FVector& corner, const TArray
 (not yet averaging normals, so triangle edges are quite pronounced)
 
 
+## Procedural Surface with Perlin Noise
+
+### TODO: add gifs and explanation 
+
+Show how can use using successive octaves of noise to generate interesting surfaces
+
 ## Future Work
 
-- Ruun on GPU [^1]
-- Average normals
-- Highly detailed meshes [^2]
-
-
-A footnote can also have multiple lines[^9].  
+- Run on GPU: it's way too slow on CPU to experiment with the terrain generation
+- Average normals for better rendering
+- Share triangle vertices
+- Highly detailed meshes
 
 ### References:
 [^1]: Paul Bourke: Polygonising a scalar field (1994)  
