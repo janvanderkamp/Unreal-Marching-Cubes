@@ -21,14 +21,43 @@ Along with debug drawing to indicate cube edges/corners and triangle edges, it's
 
 <img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/toggle_corners.gif" height="400">
 
+As can be seen here, depending on the combination of corners that are inside / outside, a large variety of shapes can be generated (max 5 triangles per cube):
 
+<img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/rotate_toggle.gif" height="400">
+
+We can even increase / decrease the iso-level value (which determines the edge of the surface and the points to generate triangles along cube edges):
+
+<img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/isolevel.gif" height="400">
+
+## Larger Surfaces
+
+With functionality tested on a single cube, it's time to test this on a larger grid. By placing many cubes in a 3D space and supplying a single density function, we can generate a surface that runs through this space.
+
+A simple sphere equation:
+
+```
+double WorldGridBuilder::DensityFunctionTest(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers)
+{
+	double density = 0.f;
+
+	FVector sample(corner.X / _dimensions.X, corner.Y / _dimensions.Y, corner.Z / _dimensions.Z);
+	FVector toCenter = FVector(0.5f) - sample;
+
+	density += toCenter.SquaredLength();
+
+	return density;
+}
+```
+<img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/sphere.gif" height="400">
+
+(not yet averaging normals, so triangle edges are quite pronounced)
 
 
 ## Future Work
 
-- run on GPU
-- average normals
-- Highly detailed meshes
+- Ruun on GPU [^1]
+- Average normals
+- Highly detailed meshes [^2]
 
 
 A footnote can also have multiple lines[^9].  
