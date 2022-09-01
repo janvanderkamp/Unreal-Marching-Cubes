@@ -13,22 +13,31 @@ Taking a single edge on the cube as an example, if one corner is inside the surf
 
 Given a set of values for each corner, deriving the containing edges and ordered vertices for triangle generation is non-trivial. But these can be generated offline and included as lookup tables for both simplicity and speed.
 
-For a more detailed explanation of the algorithm, along with both the look-up tables and short method for outputting a list of triangles, see  [^1]
+For a more detailed explanation of the algorithm, along with both the look-up tables and short method for outputting a list of triangles, see article *Polygonising a scalar field* [^1]. These have been adapted and included here, see [PolygoniseUtils.h](Source/MarchingCubes/Public/PolygoniseUtils.h)/[.cpp](Source/MarchingCubes/Private/PolygoniseUtils.cpp)
 
-The ma
+After generating triangle / index buffers etc. (using [^3] as an example) I added some editor tooling to toggle which corners are outside of the surface. By using an enum as a bitmask to represent the corners, each one can be toggled on / off.
+
+Along with debug drawing to indicate cube edges/corners and triangle edges, it's pretty easy to test this visually in-editor:
+
+<img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/toggle_corners.gif" height="400">
+
+
+
 
 ## Future Work
 
-- GPU [^1]
-- Highly detailed meshes [^2]
+- run on GPU
+- average normals
+- Highly detailed meshes
 
 
 A footnote can also have multiple lines[^9].  
 
 ### References:
-[^1]: http://paulbourke.net/geometry/polygonise/ (1994)
-[^2]: https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
-- proc mesh
+[^1]: Paul Bourke: Polygonising a scalar field (1994)  
+  http://paulbourke.net/geometry/polygonise/
+[^2]: Ryan Geiss, nvidia: Generating Complex Procedural Terrains Using GPU (2007)  
+  https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
+[^3]: Procedural Mesh Component in C++:Getting Started  
+  https://unrealcommunity.wiki/procedural-mesh-component-in-cpp:getting-started-nfj6pimv
 
-[^9]: Every new line should be prefixed with 2 spaces.  
-  This allows you to have a footnote with multiple lines.
