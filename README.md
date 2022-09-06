@@ -36,7 +36,7 @@ With functionality tested on a single cube, it's time to test this on a larger g
 A simple sphere equation:
 
 ```
-double WorldGridBuilder::DensityFunctionTest(const FVector& corner, const TArray<FNoiseSampler>& noiseSamplers)
+double WorldGridBuilder::DensityFunctionSphere(const FVector& corner)
 {
 	double density = 0.f;
 
@@ -53,18 +53,46 @@ double WorldGridBuilder::DensityFunctionTest(const FVector& corner, const TArray
 (not yet averaging normals, so triangle edges are quite pronounced)
 
 
-## Procedural Surface with Perlin Noise
+## Procedural Surfaces with Perlin Noise
+
+If we start with just returning the Z component of a grid position, we get a flat grid:
+
+```
+float WorldGridBuilder::DensityFunctionNoise(const FVector& corner)
+{
+	// Start by placing a 'floor' at Z == 0, which will cut across the center of the grid area
+	float density = corner.Z;
+
+	return density;
+}
+```
+<img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/grid_flat.png" height="250">
+
+We can then apply some noise to this based on the grid position. This can already start to look interesting when it's scaled up enough to show noticeable differences in the surface:
+
+```
+	...
+	const float noiseAmplitude = 40.f;
+	FVector sample(corner.X / _dimensions.X, corner.Y / _dimensions.Y, corner.Z / _dimensions.Z);
+	float noise = FMath::PerlinNoise3D(sample) * noiseAmplitude;
+
+	density += noise;
+	...
+```
+<img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/grid_noise_1_octave.png" height="250">
+
+# TODO: mention nvidia reference, screenshots of more octaves
 
 ### TODO: add gifs and explanation 
 
-Show how can use using successive octaves of noise to generate interesting surfaces
+Show how can use successive octaves of noise to generate interesting surfaces
 
 ## Future Work
 
 - Run on GPU: it's way too slow on CPU to experiment with the terrain generation
 - Average normals for better rendering
 - Share triangle vertices
-- Highly detailed meshes
+- Test with highly detailed meshes, and bake these to static meshes for rendering with Nanite
 
 ### References:
 [^1]: Paul Bourke: Polygonising a scalar field (1994)  
@@ -73,4 +101,3 @@ Show how can use using successive octaves of noise to generate interesting surfa
   https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
 [^3]: Procedural Mesh Component in C++:Getting Started  
   https://unrealcommunity.wiki/procedural-mesh-component-in-cpp:getting-started-nfj6pimv
-
