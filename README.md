@@ -81,10 +81,6 @@ We can then apply some noise to this based on the grid position. This can alread
 ```
 <img src="https://github.com/janvanderkamp/Unreal-Marching-Cubes/blob/main/doc/grid_noise_1_octave.png" height="250">
 
-### TODO: add gifs and explanation 
-
-Show how can use successive octaves of noise to generate interesting surfaces
-
 ## Future Work
 
 - Run on GPU: it's way too slow on CPU to experiment with the terrain generation
